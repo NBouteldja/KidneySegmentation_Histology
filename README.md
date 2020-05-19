@@ -6,9 +6,9 @@ Python code used to train and evaluate segmentation networks for renal histopath
     Copyright (C) 2020 by RWTH Aachen University                            
     http://www.rwth-aachen.de                                               
                                                                         
-License:                                                                
+    License:                                                                
                                                                          
-This software is dual-licensed under:                                   
-• Commercial license (please contact: lfb@lfb.rwth-aachen.de)           
-• AGPL (GNU Affero General Public License) open source license                                   
+    This software is dual-licensed under:                                   
+    • Commercial license (please contact: lfb@lfb.rwth-aachen.de)           
+    • AGPL (GNU Affero General Public License) open source license                                   
 \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*                                                                  
