@@ -7,7 +7,7 @@ Copyright (C) 2020 by RWTH Aachen University
 http://www.rwth-aachen.de                                               
                                                                         
 License:                                                                
-                                                                        
+<li>Indented item</li>                                                                          
 This software is dual-licensed under:                                   
 • Commercial license (please contact: lfb@lfb.rwth-aachen.de)           
 • AGPL (GNU Affero General Public License) open source license                                   
