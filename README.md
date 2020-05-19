@@ -3,7 +3,7 @@ Python code used to train and evaluate segmentation networks for renal histopath
 <br>
 <br>
 \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*                                                 
-Copyright (C) 2020 by RWTH Aachen University                            
+    Copyright (C) 2020 by RWTH Aachen University                            
 http://www.rwth-aachen.de                                               
                                                                         
 License:                                                                
