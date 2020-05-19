@@ -1,6 +1,6 @@
 # KidneySegmentation_Histology
 Python code used to train and evaluate segmentation networks for renal histopathological analysis:  
-* training.py 
+* training.py --model --setting --epochs --batchSize --lrate --weightDecay
 * getPredictionForBigPatch.py
 <br>
 <br>                 
