@@ -1,9 +1,9 @@
 # KidneySegmentation_Histology
 Python code used to train and evaluate segmentation networks for renal histopathological analysis:  
 * training.py --model --setting --epochs --batchSize --lrate --weightDecay  
-training.py is used to train and possibly evaluate the segmentation network  
+Script is used to train and possibly evaluate a segmentation network  
 * getPredictionForBigPatch.py  
-getPredictionForBigPatch.py is used to compute predictions.  
+Script is used to compute predictions including all pre- and postprocessing steps within a specified WSI.
 <br>
 <br>                 
 
