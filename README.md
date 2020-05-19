@@ -9,7 +9,7 @@ Script is used to compute predictions including all pre- and postprocessing step
 
     /**************************************************************************
     *                                                                         *
-    *   Copyright (C) %YEAR% by RWTH Aachen University                        *
+    *   Copyright (C) 2020 by RWTH Aachen University                          *
     *   http://www.rwth-aachen.de                                             *
     *                                                                         *
     *                                                                         *
