@@ -2,7 +2,7 @@
 Python code used to train and evaluate segmentation networks for renal histopathological analysis
 
 /***************************************************************************
-*                                                                         *
+\*                                                                         *
 *   Copyright (C) 2020 by RWTH Aachen University                          *
 *   http://www.rwth-aachen.de                                             *
 *                                                                         *
