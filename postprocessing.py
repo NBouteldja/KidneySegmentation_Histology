@@ -3,8 +3,6 @@ import torch
 from scipy.ndimage.measurements import label
 from scipy.ndimage.morphology import binary_dilation, binary_fill_holes
 
-from utils import getChannelSmootingConvLayer
-
 
 structure = np.zeros((3, 3), dtype=np.int)
 structure[1, :] = 1
@@ -82,11 +80,6 @@ def postprocessPredictionAndGT(prediction, GT, device, predictionsmoothing, hole
     :return: 1.postprocessed labelmap result (prediction smoothing, removal of small areas, hole filling)
              2.network output prediction (w/o postprocessing)
     """
-    ################# PREDICTION SMOOTHING ################
-    if predictionsmoothing:
-        smoothingKernel = getChannelSmootingConvLayer(8).to(device)
-        prediction = smoothingKernel(prediction)
-
     labelMap = torch.argmax(prediction, dim=1).squeeze(0).to("cpu").numpy() # Label 0/1/2/3/4/5/6/7: Background/tubuli/glom_full/glom_tuft/veins/artery_full/artery_lumen/border
 
     netOutputPrediction = labelMap.copy()
