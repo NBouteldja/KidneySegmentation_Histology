@@ -77,7 +77,7 @@ def postprocessPredictionAndGT(prediction, GT, device, predictionsmoothing, hole
     """
     :param prediction: Torch FloatTensor of size 1xCxHxW stored in VRAM/on GPU
     :param GT: HxW ground-truth label map, numpy long tensor
-    :return: 1.postprocessed labelmap result (prediction smoothing, removal of small areas, hole filling)
+    :return: 1.postprocessed labelmap result (removal of small areas, hole filling)
              2.network output prediction (w/o postprocessing)
     """
     labelMap = torch.argmax(prediction, dim=1).squeeze(0).to("cpu").numpy() # Label 0/1/2/3/4/5/6/7: Background/tubuli/glom_full/glom_tuft/veins/artery_full/artery_lumen/border
