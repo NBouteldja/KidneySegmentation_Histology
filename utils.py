@@ -41,8 +41,8 @@ def generate_ball(radius):
     for i in range(radius):
         ball = binary_dilation(ball, structure=structure)
     return np.asarray(ball, dtype=np.int)
-
-
+  
+  
 def convert_labelmap_to_rgb(labelmap):
     """
     Method used to generate rgb label maps for tensorboard visualization
@@ -567,5 +567,30 @@ def getChannelSmootingConvLayer(channels, kernel_size=5, sigma=1.5):
     return gaussian_filter
 
 
+def overlayVisualization(img, lbl, imgStr, lblStr)
+    # remove tubuli border prepare visualization
+    lbl[lbl==7] = 0
+    customColorMap = mpl.colors.ListedColormap(['black', 'red', 'green', 'blue', 'cyan', 'magenta', 'yellow', 'brown'])
+    lblMasked = np.ma.masked_where(lbl == 0, lbl)
+    sizeShift = (640-516)//2
+
+    plt.figure(figsize=(20,8))
+    plt.subplot(131)
+    plt.imshow(img)
+    plt.axis('off')
+    plt.title(imgStr)
+    plt.subplot(132)
+    plt.imshow(lbl, cmap=customColorMap, vmin = 0, vmax = 7)
+    plt.axis('off')
+    plt.title(lblStr)
+    plt.subplot(133)
+    plt.imshow(img[sizeShift:sizeShift+516, sizeShift:sizeShift+516, :])
+    plt.imshow(lblMasked, cmap=customColorMap, vmin = 0, vmax = 7, alpha=0.5)
+    plt.axis('off')
+    plt.title('Overlay')
+    plt.subplots_adjust(wspace=0, hspace=0)
+  
+  
+  
 if __name__ == '__main__':
     print()
