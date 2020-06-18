@@ -10,7 +10,9 @@ Script is used to compute predictions including all pre- and postprocessing step
 git clone https://github.com/NBouteldja/KidneySegmentation_Histology.git
 ```
 2. Install miniconda and use conda to create a suitable python environment:<br>
+```
 conda env create -f ./environment.yml
+```
 <br>
 <br>                 
 
