@@ -588,7 +588,7 @@ def overlayVisualization(img, lblCopy, imgStr, lblStr):
     plt.title(lblStr)
     plt.subplot(133)
     plt.imshow(img[sizeShift:sizeShift+516, sizeShift:sizeShift+516, :])
-    plt.imshow(lblMasked, cmap=customColorMap, vmin = 0, vmax = 7, alpha=0.5)
+    plt.imshow(lblMasked, cmap=customColorMap, vmin = 0, vmax = 7, alpha=0.45)
     plt.axis('off')
     plt.title('Overlay')
     plt.subplots_adjust(wspace=0, hspace=0)
