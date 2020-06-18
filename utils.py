@@ -572,7 +572,7 @@ def overlayVisualization(img, lblCopy, imgStr, lblStr):
     # remove tubuli border prepare visualization
     lbl[lbl==7] = 0
     # dilate tubuli replacing its border (basal membrane)
-    lbl[binary_dilation(lbl==1, structure=generate_ball(1))] = 1
+    lbl[binary_dilation(lbl==1, structure=generate_ball(2))] = 1
     customColorMap = mpl.colors.ListedColormap(['black', 'red', 'green', 'blue', 'cyan', 'magenta', 'yellow', 'brown'])
     lblMasked = np.ma.masked_where(lbl == 0, lbl)
     sizeShift = (640-516)//2
