@@ -1,9 +1,5 @@
 # KidneySegmentation_Histology
-Python code used to train and evaluate segmentation networks for renal histopathological analysis:  
-* training.py --model --setting --epochs --batchSize --lrate --weightDecay  
-Script is used to train and possibly evaluate a segmentation network  
-* getPredictionForBigPatch.py  
-Script is used to compute predictions including all pre- and postprocessing steps within a specified WSI.
+Python code used to train and evaluate segmentation networks for renal histopathological analysis.<br>
 # Installation
 1. Clone this repo using [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git):<br>
 ```
@@ -31,7 +27,14 @@ Note: *training.py* is specified as follows:
 training.py --model --setting --epochs --batchSize --lrate --weightDecay 
 ```
 # Application
-Use the trained model to segment data following *getPredictionPatch.py*.
+Apply now the trained network for histopathological renal structure segmentation using data of your choice! We also provided you some exemplary image data in the folder *exemplaryData*.
+*getPredictionForBigPatch.py*.
+```
+python ./KidneySegmentation_Histology/getPredictionForBigPatch.py
+```
+WSIpath='<ABSOLUTE PATH TO WSI>'
+modelpath = '<ABSOLUTE PATH TO TRAINED MODEL>'
+resultspath = '<ABSOLUTE PATH TO RESULTS FOLDER>'
 <br>
 <br>
 #           
