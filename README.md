@@ -28,7 +28,7 @@ Note: *training.py* is specified as follows:
 training.py --model --setting --epochs --batchSize --lrate --weightDecay 
 ```
 # Application
-Use *getPredictionForBigPatch.py* to apply the trained network for histopathological renal structure segmentation on data of your choice.
+Use *getPredictionForBigPatch.py* to apply the trained network for histopathological renal structure segmentation to data of your choice.
 ```
 python ./KidneySegmentation_Histology/getPredictionForBigPatch.py
 ```
