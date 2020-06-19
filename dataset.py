@@ -10,11 +10,13 @@ import imgaug as ia
 from scipy.ndimage.measurements import label
 from scipy.ndimage.morphology import binary_dilation
 
+# preprocesses ground-truth labelmap (data expected to already provide tubules border as label 7)
 def preprocessingGT(lbl):
     structure = np.zeros((3, 3), dtype=np.int)
     structure[1, :] = 1
     structure[:, 1] = 1
 
+    # add glomeruli border only for almost touching glomeruli
     allGlomeruli = np.logical_or(lbl == 2, lbl == 3)
     labeledGlom, numberGlom = label(np.asarray(allGlomeruli, np.uint8), structure)
     temp = np.zeros(lbl.shape)
@@ -23,6 +25,7 @@ def preprocessingGT(lbl):
     glomBorder = np.logical_and(temp > 1, np.logical_not(allGlomeruli))
     lbl[binary_dilation(glomBorder)] = 7
 
+    # add arterial border only for almost touching arteries
     allArteries = np.logical_or(lbl == 5, lbl == 6)
     labeledGlom, numberGlom = label(np.asarray(allArteries, np.uint8), structure)
     temp = np.zeros(lbl.shape)
@@ -31,7 +34,7 @@ def preprocessingGT(lbl):
     glomBorder = np.logical_and(temp > 1, np.logical_not(allArteries))
     lbl[binary_dilation(glomBorder)] = 7
 
-
+# Class representing either train, val or test dataset
 class CustomDataSetRAM(Dataset):
     def __init__(self, datasetType, logger):
         self.transformIMG = None
@@ -53,6 +56,7 @@ class CustomDataSetRAM(Dataset):
 
         assert datasetType in ['train', 'val', 'test'], '### ERROR: WRONG DATASET TYPE '+datasetType+' ! ###'
 
+        # please enter path to data folder
         image_dir_base = '<PATH-TO-DATA-FOLDER>'
 
         if datasetType == 'train':
@@ -62,6 +66,7 @@ class CustomDataSetRAM(Dataset):
         elif datasetType == 'test':
             image_dir = image_dir_base + '/Test'
 
+        # here we expect labels to be stored in same directory as respective images with ending '-labels.png' instead of '.png'
         label_dir = image_dir
         files = sorted(list(filter(lambda x: ').png' in x, os.listdir(image_dir))))
 
@@ -74,11 +79,13 @@ class CustomDataSetRAM(Dataset):
             img = img[:640, :640, :]
             lbl = np.array(Image.open(labelPath))
 
+            # preprocess ground truth
             preprocessingGT(lbl)
 
             logger.info("Load data with index " + str(k) + " : " + fname + ", ImgShape: " + str(img.shape) + " " + str(img.dtype) + ", LabelShape: " + str(lbl.shape) + " " + str(lbl.dtype) + " (max: " + str(lbl.max()) + ", min: " + str(lbl.min()) + ")")
 
             self.lblShape = lbl.shape
+            # most likely, shapes are not equal, then pad label map to same size as images with values of 8 (those values will be ignored for loss computation), providing equal sizes simplifies the appliacation of data augmentation transformation 
             if img.shape[:2] != lbl.shape:
                 lbl = np.pad(lbl, ((img.shape[0]-lbl.shape[0])//2,(img.shape[1]-lbl.shape[1])//2), 'constant', constant_values=(8,8))
 
@@ -91,6 +98,7 @@ class CustomDataSetRAM(Dataset):
 
     def __getitem__(self, index):
         if self.useAugm:
+            # get different augmentation transformation for each sample within minibatch
             ia.seed(np.random.get_state()[1][0])
 
             img, lbl = self.data[index]
@@ -98,8 +106,10 @@ class CustomDataSetRAM(Dataset):
             seq_img_d = self.transformIMG.to_deterministic()
             seq_lbl_d = self.transformLBL.to_deterministic()
 
+            # apply almost equal transformation for label maps (however using nearest neighbor interpolation)
             seq_lbl_d = seq_lbl_d.copy_random_state(seq_img_d, matching="name")
 
+            # after applying the transformation, center crop label map back to its original size
             augmentedIMG = seq_img_d.augment_image(img)
             augmentedLBL = seq_lbl_d.augment_image(lbl)[(img.shape[0]-self.lblShape[0])//2:(img.shape[0]-self.lblShape[0])//2+self.lblShape[0],(img.shape[1]-self.lblShape[1])//2:(img.shape[1]-self.lblShape[1])//2+self.lblShape[1]]
 
@@ -108,13 +118,13 @@ class CustomDataSetRAM(Dataset):
             img, lbl = self.data[index]
             return self.transform_WhenNoAugm((img, lbl[(img.shape[0]-self.lblShape[0])//2:(img.shape[0]-self.lblShape[0])//2+self.lblShape[0],(img.shape[1]-self.lblShape[1])//2:(img.shape[1]-self.lblShape[1])//2+self.lblShape[1]]))
 
-
+# normalize images to interval [-1.6, 1.6]
 class RangeNormaliziation(object):
     def __call__(self, sample):
         img, lbl = sample
         return img / 255.0 * 3.2 - 1.6, lbl
 
-
+    
 class ToTensor(object):
     def __call__(self, sample):
         img, lbl = sample
@@ -138,6 +148,7 @@ def get_Augmentation_Transf():
     sometimes4 = lambda aug: iaa.Sometimes(0.9, aug, name="Random4")
     sometimes5 = lambda aug: iaa.Sometimes(0.9, aug, name="Random5")
 
+    # specify DATA AUGMENTATION TRANSFORMATION
     seq_img = iaa.Sequential([
         iaa.AddToHueAndSaturation(value=(-13, 13), name="MyHSV"),
         sometimes2(iaa.GammaContrast(gamma=(0.85, 1.15), name="MyGamma")),
