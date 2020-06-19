@@ -13,7 +13,8 @@ import logging as log
 
 from utils import getChannelSmootingConvLayer
 
-
+# This script can be used to automatically segment a selected rectangular patch within a specified WSI! #
+# Type in path to specific WSI, deep learning model and results folder
 WSIpath='<ABSOLUTE PATH TO WSI>'
 modelpath = '<ABSOLUTE PATH TO TRAINED MODEL>'
 resultspath = '<ABSOLUTE PATH TO RESULTS FOLDER>'
@@ -23,9 +24,11 @@ if not os.path.exists(resultspath):
 
 start = time.time()
 
+# specify device to apply network on
 GPUno = 0
 device = torch.device("cuda:" + str(GPUno) if torch.cuda.is_available() else "cpu")
 
+# Apply postprocessing techniques:
 # centerWeightingOfPrediction = 5
 applyTestTimeAugmentation = True
 applyPredictionSmooting = False
@@ -40,21 +43,32 @@ structure = np.zeros((3, 3), dtype=np.int)
 structure[1, :] = 1
 structure[:, 1] = 1
 
+# Select raw coordinates (e.g. Qupath coordinates) of the left upper corner of the selected patch
 patchCenterCoordinatesRaw = np.array([30954, 6375])
 
+# specify how big the selected patch will be, [2, 2] represents 2*516 pixels width and 2*516 pixels height 
 patchGridCellTimes = np.array([2, 2])
+# when performing inference for a whole row within a patch, choose how often to split this row to prevent VRAM issues
 gpuAmountRowPatchSplits = 4
+# select on which porportion to move the sliding segmentation window
 strideProportion = 1.0
 
-sizeOfAnnotatedCells = np.array([768, 768])
+spacings = np.array([float(slide.properties['openslide.mpp-x']), float(slide.properties['openslide.mpp-y'])])
 sizeOfAnnotatedCellsResampled = np.array([516, 516])
 sizeOfImageCellResampled = np.array([640, 640])
 
+# type in how many pixels, depending on the WSI pixel sizes (spacing), would represent 174um, you can also automatically compute it by:
+# sizeOfAnnotatedCells = np.asarray(np.round(174. / spacings), np.int32)
+sizeOfAnnotatedCells = np.array([768, 768])
+
+
+# load slide
 slide = osl.OpenSlide(WSIpath)
 
-spacings = np.array([float(slide.properties['openslide.mpp-x']), float(slide.properties['openslide.mpp-y'])])
+
 patchCenterCoordinates = np.asarray(patchCenterCoordinatesRaw // spacings, np.int)
 
+# load model
 model = Custom(input_ch=3, output_ch=8, modelDim=2)
 
 # state_dict = torch.load(modelpath, map_location=lambda storage, loc: storage)
@@ -70,7 +84,6 @@ model.train(False)
 model.eval()
 model = model.to(device)
 # model = nn.DataParallel(model).to(device)
-
 
 amountTotalClasses = 8
 
@@ -107,15 +120,17 @@ logger.info('PatchGridCellTimes: '+str(patchGridCellTimes))
 logger.info('SizeOfExtractedImagePatch: '+str(sizeOfExtractedImagePatch))
 logger.info('SizeOfSegmentationPatch: '+str(sizeOfSegmentationPatch))
 
-
+# save prediciton computation time when already computed by loading prediction and then postprocessing
 if loadPredictionNumpy:
     extractedResampledBigPatch = np.load(resultspath + '/extractedResampledBigPatch.npy')
     finalBigPatchPrediction = np.load(resultspath + '/finalBigPatchPrediction.npy')
 else:
+    # extract patch from WSI
     extractedPatch = slide.read_region(location=patchCenterCoordinates, level=0, size=sizeOfExtractedImagePatch) 
 
     extractedPatch = np.array(extractedPatch)[:,:,:-1] #remove alpha channel
 
+    # rescale patch according to our chosen pixel sizes
     extractedPatch = rescale(extractedPatch, downsamplingFactor, order=1, preserve_range=False, multichannel=True)
     logger.info(tuple(reversed(extractedPatch.shape[:2])))
     logger.info(sizeOfSegmentationPatch + sizeOfImageCellResampled - sizeOfAnnotatedCellsResampled)
@@ -124,12 +139,12 @@ else:
     # preprocessing
     extractedPatchPre = (np.array(extractedPatch * 3.2 - 1.6, np.float32)).transpose(2, 0, 1) #initial 255.0 division unnecessary since preserve range normalizes to [0,1]
 
+    # divide huge image patch into multiple smaller patches of sizes 640x640x3
     smallOverlappingPatches = patchify(extractedPatchPre.copy(), patch_size=(3,sizeOfImageCellResampled[0],sizeOfImageCellResampled[1]), step=segmentationPatchStride[0]) #shape: (1, 5, 7, 3, 512, 512)
 
     assert (tuple(reversed(smallOverlappingPatches.shape[1:3])) == patchGridCellTimes).all(), "Error...fix patchify result sizes"
 
     # Choose either storing data on RAM or VRAM:
-
     # smallOverlappingPatches = torch.from_numpy(smallOverlappingPatches).to(device)
     smallOverlappingPatches = torch.from_numpy(smallOverlappingPatches)
 
@@ -139,6 +154,7 @@ else:
     amountOfRowPatches = smallOverlappingPatches.size()[2]
     gpuIDXsplits = np.array_split(np.arange(amountOfRowPatches), gpuAmountRowPatchSplits)
 
+    # compute prediction for each row, also for each split of a row and save predictions into 'bigPatchResults'
     for x in range(smallOverlappingPatches.size()[1]):
         for i in range(gpuAmountRowPatchSplits):
             imgBatch = smallOverlappingPatches[0, x, gpuIDXsplits[i], :, :, :].to(device)
@@ -165,14 +181,17 @@ else:
                     bigPatchResults[:, segmentationPatchStride[0]*x:sizeOfAnnotatedCellsResampled[0]+segmentationPatchStride[0]*x, segmentationPatchStride[1]*y:sizeOfAnnotatedCellsResampled[1]+segmentationPatchStride[1]*y] += rowPrediction[idx, :, :, :]
 
 
+    # optional: smooth prediction probabilities using gaussian kernels
     with torch.no_grad():
         if applyPredictionSmooting:
             bigPatchResults = bigPatchResults.unsqueeze(0)
             smoothingKernel = getChannelSmootingConvLayer(8).to(device)
             bigPatchResults = smoothingKernel(bigPatchResults).squeeze(0)
 
+        # compute final prediction label map
         finalBigPatchPrediction = torch.argmax(bigPatchResults, 0).to("cpu").numpy() #shape: (1536, 2048)
 
+    # remove offset between image and lbl size
     offset = (sizeOfImageCellResampled[0]-sizeOfAnnotatedCellsResampled[0])//2
     extractedPatch = extractedPatch[offset : extractedPatch.shape[0] - offset, offset : extractedPatch.shape[1] - offset,:]
     extractedResampledBigPatch = np.asarray(np.round(extractedPatch * 255.), np.uint8) #shape: (1536, 2048, 3)
@@ -184,7 +203,7 @@ else:
         np.save(resultspath + '/finalBigPatchPrediction.npy', finalBigPatchPrediction)
 
 
-
+# save image and prediction in different modes:
 
 saveImage(extractedResampledBigPatch, resultspath + '/Coord_'+str(patchCenterCoordinatesRaw[0])+'_'+str(patchCenterCoordinatesRaw[1])+'_OrigPatch.png', figSize)
 
