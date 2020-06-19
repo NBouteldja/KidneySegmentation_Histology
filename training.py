@@ -40,6 +40,7 @@ applyTestTimeAugmentation = True
 ##############################################################################################
 
 
+# this method trains a network with the given specification
 def train(model, setting, optimizer, scheduler, epochs, batchSize, logger, resultsPath, testResults, testResultsTTA, tbWriter, allClassEvaluators):
 
     model.to(device)
@@ -51,6 +52,7 @@ def train(model, setting, optimizer, scheduler, epochs, batchSize, logger, resul
     def worker_init_fn(worker_id):
         np.random.seed(np.random.get_state()[1][0] + worker_id)
 
+    # allocate and separately load train / val / test data sets
     dataset_Train = CustomDataSetRAM('train', logger)
     dataloader_Train = DataLoader(dataset=dataset_Train, batch_size = batchSize, shuffle = True, num_workers = 4, worker_init_fn=worker_init_fn)
 
@@ -64,6 +66,7 @@ def train(model, setting, optimizer, scheduler, epochs, batchSize, logger, resul
 
     logger.info('####### DATA LOADED - TRAINING STARTS... #######')
 
+    # Utilize dice loss and weighted cross entropy loss
     Dice_Loss = DiceLoss(ignore_index=8).to(device)
     CE_Loss = nn.CrossEntropyLoss(weight=torch.FloatTensor([1., 1., 1., 1., 1., 1., 1., 10.]), ignore_index=8).to(device)
     # WCE_Loss = nn.CrossEntropyLoss(weight=getWeightsForCEloss(dataset, train_idx, areLabelsOnehotEncoded=False, device=device, logger=logger)).to(device)
@@ -78,6 +81,7 @@ def train(model, setting, optimizer, scheduler, epochs, batchSize, logger, resul
         np.random.seed()
         start = time.time()
         for batch in dataloader_Train:
+            # get data and put onto device
             imgBatch, segBatch = batch
 
             imgBatch = imgBatch.to(device)
@@ -85,6 +89,7 @@ def train(model, setting, optimizer, scheduler, epochs, batchSize, logger, resul
 
             optimizer.zero_grad()
 
+            # forward image batch, compute loss and backprop
             prediction = model(imgBatch)
 
             CEloss = CE_Loss(prediction, segBatch)
@@ -103,12 +108,16 @@ def train(model, setting, optimizer, scheduler, epochs, batchSize, logger, resul
         epochTrainLoss = epochLoss / dataloader_Train.__len__()
 
         end = time.time()
+        # print current loss
         logger.info('[Epoch '+str(epoch+1)+'] Train-Loss: '+str(round(epochTrainLoss,5))+', DiceLoss: '+
                     str(round(epochDiceLoss/dataloader_Train.__len__(),5))+', CELoss: '+str(round(epochCELoss/dataloader_Train.__len__(),5))+'  [took '+str(round(end-start,3))+'s]')
 
+        # use tensorboard for visualization of training progress
         tbWriter.add_scalars('Plot/train', {'loss' : epochTrainLoss,
                                            'CEloss' : epochCELoss/dataloader_Train.__len__(),
                                            'DiceLoss' : epochDiceLoss/dataloader_Train.__len__()}, epoch)
+
+        # each 50th epoch add prediction image to tensorboard
         if epoch % 50 == 0:
             with torch.no_grad():
                 tbWriter.add_image('Train/_img', torch.round((imgBatch[0,:,:,:] + 1.6) / 3.2 * 255.0).byte() , epoch)
@@ -120,7 +129,7 @@ def train(model, setting, optimizer, scheduler, epochs, batchSize, logger, resul
             logger.info('[Epoch ' + str(epoch + 1) + '] ' + parse_RAM_info())
 
 
-
+        # if validation is active, compute dice scores on validation data
         if 'val' in setting:
             model.train(False)
 
@@ -168,7 +177,8 @@ def train(model, setting, optimizer, scheduler, epochs, batchSize, logger, resul
             logger.info('### No early stop performed! Best val model loaded... ####')
             if 'val' in setting:
                 scheduler.loadBestValIntoModel()
-
+                
+        # if test is active, compute global dice scores on test data for fast and coarse performance check
         if 'test' in setting:
             model.train(False)
 
@@ -218,18 +228,19 @@ def train(model, setting, optimizer, scheduler, epochs, batchSize, logger, resul
                     for sampleNo in test_idx:
                         diseaseID = -1
                         if sampleNo < sum(testDatasetsSizes[:1]):
-                            diseaseID = 0
+                            diseaseID = 0 # Healthy test sample
                         elif sampleNo < sum(testDatasetsSizes[:2]):
-                            diseaseID = 2
+                            diseaseID = 2 # UUO test sample
                         elif sampleNo < sum(testDatasetsSizes[:3]):
-                            diseaseID = 4
+                            diseaseID = 4 # Adenine test sample
                         elif sampleNo < sum(testDatasetsSizes[:4]):
-                            diseaseID = 6
+                            diseaseID = 6 # Alport test sample
                         elif sampleNo < sum(testDatasetsSizes[:5]):
-                            diseaseID = 8
+                            diseaseID = 8 # IRI test sample
                         elif sampleNo < sum(testDatasetsSizes[:6]):
-                            diseaseID = 10
+                            diseaseID = 10 # NTN test sample
 
+                        # get test sample, forward it through network in evaluation mode, and compute performance
                         imgBatch, segBatch = dataset_Test.__getitem__(sampleNo)
 
                         imgBatch = imgBatch.unsqueeze(0).to(device)
@@ -239,13 +250,15 @@ def train(model, setting, optimizer, scheduler, epochs, batchSize, logger, resul
 
                         predictionCPU = prediction.to("cpu")
 
+                        # apply post-processing
                         postprocessedPrediction, outputPrediction, preprocessedGT = postprocessPredictionAndGT(prediction, segBatch.squeeze(0).numpy(), device=device, predictionsmoothing=True, holefilling=True)
-
                         classInstancePredictionList, classInstanceGTList, finalPredictionRGB, preprocessedGTrgb = extractInstanceChannels(postprocessedPrediction, preprocessedGT, tubuliDilation=True)
 
+                        # evaluate performance (TP, NP, FP counting and dice score computation)
                         for i in range(6): #number classes to evaluate = 6
                             allClassEvaluators[diseaseID][i].add_example(classInstancePredictionList[i],classInstanceGTList[i])
 
+                        # compute global dice scores as coarse performance check
                         diceScores_Test.append(getDiceScores(predictionCPU, segBatch))
 
 
@@ -258,6 +271,7 @@ def train(model, setting, optimizer, scheduler, epochs, batchSize, logger, resul
                             figPath = figFolder + '/test_idx_' + str(sampleNo) + '_result.png'
                             saveFigureResults(imgBatchCPU, outputPrediction, postprocessedPrediction, finalPredictionRGB, segBatch.squeeze(0).numpy(), preprocessedGT, preprocessedGTrgb, fullResultPath=figPath, alpha=0.4)
 
+                        # perform exactly the same when applying TTA 
                         if applyTestTimeAugmentation:
                             prediction = torch.softmax(prediction, 1)
 
@@ -288,12 +302,14 @@ def train(model, setting, optimizer, scheduler, epochs, batchSize, logger, resul
                                 saveFigureResults(imgBatchCPU, outputPrediction, postprocessedPrediction, finalPredictionRGB, segBatch.squeeze(0).numpy(), preprocessedGT, preprocessedGTrgb, fullResultPath=figPath, alpha=0.4)
 
 
+                    # print global dice scores as coarse performance check
                     diceScores_Test = np.concatenate(diceScores_Test, 0)  # <- all dice scores of test data (amountTestData x amountClasses-1)
                     diceScores_Test = diceScores_Test[:, :-1]  # ignore last coloum=border dice scores
                     mean_DiceScores_Test, test_mean_score = getMeanDiceScores(diceScores_Test, logger)
                     logger.info('[FINAL RESULT] [Epoch ' + str(epoch + 1) + '] Test-Score (mean label dice scores): ' + str(np.round(mean_DiceScores_Test, 4)) + ', Mean: ' + str(round(test_mean_score, 4)))
                     testResults.append(diceScores_Test)
 
+                    # print global dice scores of TTA as coarse performance check
                     if applyTestTimeAugmentation:
                         diceScores_Test_TTA = np.concatenate(diceScores_Test_TTA, 0)  # <- all dice scores of test data (amountTestData x amountClasses-1)
                         diceScores_Test_TTA = diceScores_Test_TTA[:, :-1]  # ignore last coloum=border dice scores
@@ -310,7 +326,6 @@ def train(model, setting, optimizer, scheduler, epochs, batchSize, logger, resul
     logger.info('[Epoch '+str(epoch+1)+'] ### Training done! ###')
 
     return model
-
 
 
 def set_up_training(modelString, setting, epochs, batchSize, lrate, weightDecay, logger, resultsPath):
@@ -334,6 +349,7 @@ def set_up_training(modelString, setting, epochs, batchSize, lrate, weightDecay,
     shutil.rmtree(tensorboardPath, ignore_errors=True) #<- remove existing TB events
     tbWriter = SummaryWriter(log_dir=tensorboardPath)
 
+    # load specified neural network
     if modelString == 'custom':
         model = Custom(input_ch=3, output_ch=8, modelDim=2)
     elif modelString == 'unet_mod':
@@ -350,6 +366,7 @@ def set_up_training(modelString, setting, epochs, batchSize, lrate, weightDecay,
 
     scheduler = MyLRScheduler(optimizer, model, resultsModelPath, setting, initLR=lrate, divideLRfactor=3.0)
 
+    # train network given specified specifications
     trained_model = train(
         model,
         setting,
@@ -365,10 +382,10 @@ def set_up_training(modelString, setting, epochs, batchSize, lrate, weightDecay,
         allClassEvaluators
     )
 
-
     torch.save(trained_model.state_dict(), resultsModelPath + '/finalModel.pt')
 
     if 'test' in setting:
+        # print prediction performance results (instance-dice scores and Average Precisions) for each disease model!
         logger.info('### FINAL TEST RESULTS ###')
         allDiceScores = np.concatenate(testResults, 0)
         # Remove dice scores for border class
@@ -393,6 +410,7 @@ def set_up_training(modelString, setting, epochs, batchSize, lrate, weightDecay,
         logger.info('Sample with lowest prediction performance (mean dice score: '+str(round(sampleMeanDiceMin,4))+') has index: '+str(sampleArgMin))
 
         if applyTestTimeAugmentation:
+            # print prediction performance TTA results (instance-dice scores and Average Precisions) for each disease model!
             allDiceScores_TTA = np.concatenate(testResultsTTA, 0)
             # Remove dice scores for border class
             allDiceScores_TTA = allDiceScores_TTA[:,:-1]
@@ -416,6 +434,7 @@ def set_up_training(modelString, setting, epochs, batchSize, lrate, weightDecay,
             logger.info('Sample with highest TTA prediction performance (mean dice score: ' + str(round(sampleMeanDiceMax, 4)) + ') has index: ' + str(sampleArgMax))
             logger.info('Sample with lowest TTA prediction performance (mean dice score: ' + str(round(sampleMeanDiceMin, 4)) + ') has index: ' + str(sampleArgMin))
 
+        # print quantitative performance results for each disease model
         for m in range(len(diseaseModels)):
             logger.info('############################### RESULTS FOR '+ diseaseModels[m] +' ###############################')
             printResultsForDiseaseModel(evaluatorID=2*m, allClassEvaluators=allClassEvaluators, applyTestTimeAugmentation=applyTestTimeAugmentation, logger=logger, saveResults=True, resultsPath=resultsPath, diseaseModels=diseaseModels)
@@ -425,6 +444,7 @@ def set_up_training(modelString, setting, epochs, batchSize, lrate, weightDecay,
 
 if '__main__' == __name__:
     import argparse
+    # parse arguments
     parser = argparse.ArgumentParser(description='python training.py -m <model-type> -d <dataset> -s <train_valid_test> -e <epochs> '+
                                                  '-b <batch-size> -r <learning-rate> -w <weight-decay>')
     parser.add_argument('-m', '--model', default='custom')
@@ -442,7 +462,7 @@ if '__main__' == __name__:
     assert(options.lrate > 0)
     assert(options.weightDecay > 0)
 
-    # Set results path
+    # Specify here the results path
     resultsPath = '<PATH-TO-RESULTS-FOLDER>'
 
     if not os.path.exists(resultsPath):
