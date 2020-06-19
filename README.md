@@ -17,6 +17,10 @@ conda env create -f ./environment.yml
 ```
 source activate python37
 ```
+4. Install [pytorch](https://pytorch.org/) depending on your system:
+```
+conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
+```
 <br>
 <br>                 
 
