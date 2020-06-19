@@ -27,10 +27,12 @@ Note: *training.py* is specified as follows:
 training.py --model --setting --epochs --batchSize --lrate --weightDecay 
 ```
 # Application
-Use *getPredictionForBigPatch.py* to apply the trained network for histopathological renal structure segmentation on data of your choice! You can also use our provided exemplary image data from the folder *exemplaryData* showing various specific pathologies associated with our different murine disease models. (Note: Before, you need to specify the path to the WSI (variable: *WSIpath*), the model path (variable: *modelpath*), and the path to a results folder (variable: *resultspath*).)
+Use *getPredictionForBigPatch.py* to apply the trained network for histopathological renal structure segmentation on data of your choice!
 ```
 python ./KidneySegmentation_Histology/getPredictionForBigPatch.py
 ```
+You can also use our provided exemplary image data from the folder *exemplaryData* showing various specific pathologies associated with our different murine disease models. (Note: Before, you need to specify the path to the WSI (variable: *WSIpath*), the model path (variable: *modelpath*), and the path to a results folder (variable: *resultspath*).)
+
 <br>
 <br>
 #           
