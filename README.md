@@ -21,6 +21,12 @@ source activate python37
 ```
 conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
 ```
+5. Train a network (Note: You need to specify the path to results folder (*resultsPath*) in *training.py* and the path to your data set folder(*image_dir_base*) in *dataset.py*).
+```
+training.py --model --setting --epochs --batchSize --lrate --weightDecay 
+python ./KidneySegmentation_Histology/training.py -m custom -s train_val_test -e 500 -b 6 -r 0.001 -w 0.00001
+```
+
 <br>
 <br>                 
 
