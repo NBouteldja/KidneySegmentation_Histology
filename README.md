@@ -25,7 +25,7 @@ conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
 ```
 python ./KidneySegmentation_Histology/training.py -m custom -s train_val_test -e 500 -b 6 -r 0.001 -w 0.00001
 ```
-Further note *training.py*'s specification:
+Note: *training.py* is specified as follows:
 ```
 training.py --model --setting --epochs --batchSize --lrate --weightDecay 
 ```
