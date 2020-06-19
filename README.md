@@ -33,13 +33,27 @@ python ./KidneySegmentation_Histology/getPredictionForBigPatch.py
 ```
 Note: Before running the script, you need to specify the path to the WSI (variable: *WSIpath*), the network path (variable: *modelpath*), and the path to a results folder (variable: *resultspath*).<br>
 In particular, the script will segment a specified patch from the given WSI using the network. Determine the position of the patch of interest by providing the raw coodinates (e.g. coordinates shown in QuPath) of its upper left corner (variable: *patchCenterCoordinatesRaw*) and determine its size by modifying *patchGridCellTimes*. The latter variable specifies how many 516x516 patches are segmented row-wise as well as column-wise.<br>
+<br>
+You can also apply the trained network to our provided exemplary image patches contained in the folder *exemplaryData*. These patches show various pathologies associated with different murine disease models, and are listed below including our ground-truth annotation:
+<br>
+| Healthy | Annotation |
+|:--:|:--:|
+| <img src="https://github.com/NBouteldja/KidneySegmentation_Histology/blob/master/exemplaryData/Healthy.png?raw=true" width="400">| <img src="https://github.com/NBouteldja/KidneySegmentation_Histology/blob/master/exemplaryData/Healthy-labels.png?raw=true" width="324"> |
+| UUO | Annotation |
+| <img src="https://github.com/NBouteldja/KidneySegmentation_Histology/blob/master/exemplaryData/UUO.png?raw=true" width="400">| <img src="https://github.com/NBouteldja/KidneySegmentation_Histology/blob/master/exemplaryData/UUO-labels.png?raw=true" width="324"> |
+| Adenine | Annotation |
+| <img src="https://github.com/NBouteldja/KidneySegmentation_Histology/blob/master/exemplaryData/Adenine.png?raw=true" width="400">| <img src="https://github.com/NBouteldja/KidneySegmentation_Histology/blob/master/exemplaryData/Adenine-labels.png?raw=true" width="324"> |
+| Alport | Annotation |
+| <img src="https://github.com/NBouteldja/KidneySegmentation_Histology/blob/master/exemplaryData/Alport.png?raw=true" width="400">| <img src="https://github.com/NBouteldja/KidneySegmentation_Histology/blob/master/exemplaryData/Alport-labels.png?raw=true" width="324"> |
+| IRI | Annotation |
+| <img src="https://github.com/NBouteldja/KidneySegmentation_Histology/blob/master/exemplaryData/IRI.png?raw=true" width="400">| <img src="https://github.com/NBouteldja/KidneySegmentation_Histology/blob/master/exemplaryData/IRI-labels.png?raw=true" width="324"> |
+| NTN | Annotation |
+| <img src="https://github.com/NBouteldja/KidneySegmentation_Histology/blob/master/exemplaryData/NTN.png?raw=true" width="400">| <img src="https://github.com/NBouteldja/KidneySegmentation_Histology/blob/master/exemplaryData/NTN-labels.png?raw=true" width="324"> |
 
-You can also use our provided exemplary image data from the folder *exemplaryData* showing various specific pathologies associated with our different murine disease models.
 
-Hier Bilder zeigen!
 <br>
 <br>
-#           
+           
 
     /**************************************************************************
     *                                                                         *
