@@ -1,5 +1,5 @@
 # KidneySegmentation_Histology
-Python code used to train and evaluate segmentation networks for renal histopathological analysis.<br>
+This repository represents a python framework to train and evaluate segmentation networks for renal histopathological analysis. In particular, we trained a neural network based on the [U-net architecture](https://arxiv.org/pdf/1505.04597.pdf) to segment several renal structures including tubulus `#ff0000`, glomerulus `#00ff00`, glomerular tuft `#0000ff`, vein (including renal pelvis) `#ffff00`, artery `#ff00ff`, and arterial lumen `#00ffff` from histopathology data.<br>
 # Installation
 1. Clone this repo using [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git):<br>
 ```
