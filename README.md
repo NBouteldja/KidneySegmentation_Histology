@@ -54,7 +54,7 @@ You can also apply the trained network to our provided exemplary image patches c
 <br>
 <br>
            
-
+#
     /**************************************************************************
     *                                                                         *
     *   Copyright (C) 2020 by RWTH Aachen University                          *
