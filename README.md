@@ -27,16 +27,18 @@ Note: *training.py* is specified as follows:
 training.py --model --setting --epochs --batchSize --lrate --weightDecay 
 ```
 # Application
-Use *getPredictionForBigPatch.py* to apply the trained network for histopathological renal structure segmentation on data of your choice:
+Use *getPredictionForBigPatch.py* to apply the trained network for histopathological renal structure segmentation on data of your choice.
 ```
 python ./KidneySegmentation_Histology/getPredictionForBigPatch.py
 ```
-Note: Before running the script, you need to specify the path to the WSI (variable: *WSIpath*), the model path (variable: *modelpath*), and the path to a results folder (variable: *resultspath*).
+Note: Before running the script, you need to specify the path to the WSI (variable: *WSIpath*), the network path (variable: *modelpath*), and the path to a results folder (variable: *resultspath*).<br>
+In particular, the script will segment a specified patch from the given WSI. To determine the position of the patch of interest, specify the raw coodinates (e.g. coordinates shown in QuPath) of its upper left corner by modifying the variable *patchCenterCoordinatesRaw*. Determine patch size by changing *patchGridCellTimes*.
 
-# Select raw coordinates (e.g. Qupath coordinates) of the left upper corner of the selected patch
+# test
+#Select raw coordinates (e.g. Qupath coordinates) of the left upper corner of the selected patch
 patchCenterCoordinatesRaw = np.array([30954, 6375])
 
-# specify how big the selected patch will be, [2, 2] represents 2*516 pixels width and 2*516 pixels height 
+#specify how big the selected patch will be, [2, 2] represents 2*516 pixels width and 2*516 pixels height 
 patchGridCellTimes = np.array([2, 2])
 
 You can also use our provided exemplary image data from the folder *exemplaryData* showing various specific pathologies associated with our different murine disease models.
