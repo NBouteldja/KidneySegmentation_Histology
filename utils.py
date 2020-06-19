@@ -17,6 +17,7 @@ import torch.nn as nn
 from scipy.ndimage.measurements import label
 from scipy.ndimage.morphology import binary_dilation, binary_fill_holes
 
+#### THIS UTILITY PYTHON SCRIPT CONTAINS LOTS OF HELPFUL FUNCTIONS ####
 
 colors = torch.tensor([[  0,   0,   0], # Black
                        [255,   0,   0], # Red
@@ -30,7 +31,7 @@ colors = torch.tensor([[  0,   0,   0], # Black
                        [255, 140,   0], # Orange
                        [255, 255, 255]], dtype=torch.uint8) # White
 
-
+# Generates a 2d ball of a specified radius representing a structuring element for morphological operations
 def generate_ball(radius):
     structure = np.zeros((3, 3), dtype=np.int)
     structure[1, :] = 1
@@ -95,6 +96,9 @@ def convert_labelmap_to_rgb_except_first_class(labelmap):
 def getColorMapForLabelMap():
     return ['black', 'red', 'green', 'blue', 'cyan', 'magenta', 'yellow', 'brown', 'orange', 'purple', 'white']
 
+# saves final results in a figure containing 2 rows and 4 coloums: From first to last: 1. Image, 2. network prediction, 
+# 3. postprocessed prediction, 4. prediction on instance-level for tubules, 5. overlay of images and postprocessed prediction
+# 6. Ground-Truth, 7. preprocessed Ground-Truth, 8. preprocessed Ground-Truth on instance-level for tubules
 def saveFigureResults(img, outputPrediction, postprocessedPrediction, finalPredictionRGB, GT, preprocessedGT, preprocessedGTrgb, fullResultPath, alpha=0.4):
     customColors = getColorMapForLabelMap()
     max_number_of_labels = len(customColors)
@@ -142,6 +146,7 @@ def saveFigureResults(img, outputPrediction, postprocessedPrediction, finalPredi
     plt.savefig(fullResultPath)
     plt.close()
 
+# Visualizes prediction after applying tubules dilation
 def savePredictionResults(predictionWithoutTubuliDilation, fullResultPath, figSize):
     prediction = predictionWithoutTubuliDilation.copy()
     prediction[binary_dilation(binary_dilation(binary_dilation(binary_dilation(prediction == 1))))] = 1
@@ -159,6 +164,7 @@ def savePredictionResults(predictionWithoutTubuliDilation, fullResultPath, figSi
     plt.savefig(fullResultPath)
     plt.close()
 
+# Visualizes prediction without applying tubules dilation
 def savePredictionResultsWithoutDilation(prediction, fullResultPath, figSize):
     customColors = getColorMapForLabelMap()
     max_number_of_labels = len(customColors)
@@ -173,6 +179,7 @@ def savePredictionResultsWithoutDilation(prediction, fullResultPath, figSize):
     plt.savefig(fullResultPath)
     plt.close()
 
+# Visualizes prediction and image overlay after dilating tubules
 def savePredictionOverlayResults(img, predictionWithoutTubuliDilation, fullResultPath, figSize, alpha=0.4):
     prediction = predictionWithoutTubuliDilation.copy()
     prediction[binary_dilation(binary_dilation(binary_dilation(prediction == 1)))] = 1
@@ -192,6 +199,7 @@ def savePredictionOverlayResults(img, predictionWithoutTubuliDilation, fullResul
     plt.savefig(fullResultPath)
     plt.close()
 
+# Visualizes prediction and image overlay without dilating tubules
 def saveOverlayResults(img, seg, fullResultPath, figHeight, alpha=0.4):
     segMask = np.ma.masked_where(seg == 0, seg)
 
@@ -209,6 +217,7 @@ def saveOverlayResults(img, seg, fullResultPath, figHeight, alpha=0.4):
     plt.savefig(fullResultPath)
     plt.close()
 
+# Visualizes prediction and image RGB overlay
 def saveRGBPredictionOverlayResults(img, prediction, fullResultPath, figSize, alpha=0.4):
     predictionMask = prediction.sum(2)==0
     predictionCopy = prediction.copy()
@@ -284,7 +293,7 @@ def parse_nvidia_smi(unit=0):
 def parse_RAM_info():
     return 'Current RAM usage: '+str(round(psutil.Process(os.getpid()).memory_info().rss / 1E6, 2))+' MB'
 
-
+# Count amount of parameters in a given model
 def countParam(model):
     model_parameters = filter(lambda p: p.requires_grad, model.parameters())
     params = sum([np.prod(p.size()) for p in model_parameters])
@@ -406,6 +415,7 @@ def getDiceScores(prediction, segBatch):
     return labelDiceScores
 
 
+# This method is used to print the final prediction performance measured by average precision and instance-level dice scores results for each given disease model
 def printResultsForDiseaseModel(evaluatorID, allClassEvaluators, applyTestTimeAugmentation, logger, saveResults, resultsPath, diseaseModels):
     logger.info('########## NOW: Detection (average precision) and segmentation accuracies (object-level dice): ##########')
     precisionsTub, avg_precisionTub, avg_dice_scoreTub, std_dice_scoreTub, min_dice_scoreTub, max_dice_scoreTub = allClassEvaluators[evaluatorID][0].score()  # tubuliresults
@@ -481,10 +491,11 @@ def printResultsForDiseaseModel(evaluatorID, allClassEvaluators, applyTestTimeAu
             np.save(figPath + '/' + disease + '_detectionResults_TTA.npy', np.stack((precisionsTub, precisionsGlom, precisionsTuft, precisionsVeins, precisionsArtery, precisionsLumen)))
 
 
-
+# this method divided a large patch into smaller patches
 def patchify(patches: np.ndarray, patch_size: Tuple[int, int], step: int = 1):
     return view_as_windows(patches, patch_size, step)
 
+# undoes upper method
 def unpatchify(patches: np.ndarray, imsize: Tuple[int, int]):
 
     assert len(patches.shape) == 4
@@ -531,7 +542,7 @@ def unpatchify(patches: np.ndarray, imsize: Tuple[int, int]):
 # assert (reconstructed_image == image).all()
 
 
-
+# this method provides a smoothing convolutional layer used to smooth output probabilities
 def getChannelSmootingConvLayer(channels, kernel_size=5, sigma=1.5):
 
     # Create a x, y coordinate grid of shape (kernel_size, kernel_size, 2)
@@ -566,7 +577,7 @@ def getChannelSmootingConvLayer(channels, kernel_size=5, sigma=1.5):
 
     return gaussian_filter
 
-
+# method to visualize image as well as the prediction after tubule dilation as well as its overlay
 def overlayVisualization(img, lblCopy, imgStr, lblStr):
     lbl = lblCopy.copy()
     # remove tubuli border prepare visualization
