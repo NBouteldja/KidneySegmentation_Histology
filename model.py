@@ -7,7 +7,7 @@ from torchvision import models
 from functools import partial
 
 
-##### XAVIER WEIGHT INIT #####
+##### XAVIER WEIGHT INITIALIZATION FOR NETWORK PARAMETER INITIALIZATION #####
 def init_weights_xavier_normal(m):
     if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d) or isinstance(m, nn.Conv3d) or isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.ConvTranspose3d):
         nn.init.xavier_normal_(m.weight)
@@ -25,7 +25,8 @@ def init_weights_xavier_uniform(m):
 nonlinearity = partial(F.relu, inplace=True)
 
 ####################################################################################################
-# ----- Custom Unet 2D/3D - Pooling-Encoder + (Transposed/Upsampling)-Decoder + DoubleConvs ----- #
+# Custom represents our utilized and developed deep learning model. It is based on the U-Net architecture:
+# ----- Custom Unet 2D - Pooling-Encoder + (Transposed/Upsampling)-Decoder + DoubleConvs ----- #
 class Custom(nn.Module):
     def __init__(self, input_ch=3, output_ch=1, modelDim=2):
         super(Custom, self).__init__()
@@ -63,6 +64,7 @@ class Custom(nn.Module):
         x = self.outc(x)
         return x
 
+# This class represents the vanilla u-net by Ronneberger et al. that has been sparsely modified to run on 640x640 data and output 516x516
 class UNetVanillaMod(nn.Module):
     def __init__(self, input_ch=3, output_ch=1, modelDim=2):
         super(UNetVanillaMod, self).__init__()
@@ -94,7 +96,8 @@ class UNetVanillaMod(nn.Module):
         x = self.outc(x)
         return x
 
-
+# This class represents the vanilla context-encoder by Gu et al. that has been sparsely modified to run on 640x640 data and output 516x516
+# Code (like DAC, RMP modules, etc) mostly copied from his github repo: https://github.com/Guzaiwang/CE-Net
 class CE_mod(nn.Module):
     def __init__(self, input_ch=3, output_ch=1, modelDim=2):
         super(CE_mod, self).__init__()
