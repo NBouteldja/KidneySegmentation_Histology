@@ -32,7 +32,7 @@ Use *getPredictionForBigPatch.py* to apply the trained network for histopatholog
 python ./KidneySegmentation_Histology/getPredictionForBigPatch.py
 ```
 Note: Before running the script, you need to specify the path to the WSI (variable: *WSIpath*), the network path (variable: *modelpath*), and the path to a results folder (variable: *resultspath*).<br>
-In particular, the script will segment a specified patch from the given WSI using the network. Determine the position of the patch of interest by providing the raw coodinates (e.g. coordinates shown in QuPath) of its upper left corner (variable: *patchCenterCoordinatesRaw*) and determine its size by modifying *patchGridCellTimes*. This variable specifies how many 516x516 patches are segmented row-wise as well as column-wise.<br>
+In particular, the script will segment a specified patch from the given WSI using the network. Determine the position of the patch of interest by providing the raw coodinates (e.g. coordinates shown in QuPath) of its upper left corner (variable: *patchCenterCoordinatesRaw*) and determine its size by modifying *patchGridCellTimes*. The latter variable specifies how many 516x516 patches are segmented row-wise as well as column-wise.<br>
 
 You can also use our provided exemplary image data from the folder *exemplaryData* showing various specific pathologies associated with our different murine disease models.
 
