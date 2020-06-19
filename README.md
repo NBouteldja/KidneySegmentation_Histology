@@ -34,7 +34,7 @@ training.py --model --setting --epochs --batchSize --lrate --weightDecay
 Use the trained model to segment data following *getPredictionPatch.py*.
 <br>
 <br>
-# Copyright          
+#           
 
     /**************************************************************************
     *                                                                         *
