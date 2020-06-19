@@ -14,9 +14,9 @@ class DiceLoss(nn.Module):
 
     def forward(self, prediction, target):
         """
-        Computes the dice loss (averaging dice scores across B x C) between network prediction and target used for training
+        Computes the dice loss (by averaging dice scores across B x C) between network prediction and target used for training
         :param prediction: BxCxHxW (2d) or BxCxHxWxD (3d) float tensor, CARE: prediction results straight
-               after last conv without being finally propagated through an activation (softmax, sigmoid)
+               after last conv without being finally propagated through a final activation function (softmax, sigmoid)
         :param target: BxCxHxW (2d) or BxCxHxWxD (3d) float tensor representing the ground-truth as one-hot encoding
         :return: 1 - mean dice score across BxC
         """
