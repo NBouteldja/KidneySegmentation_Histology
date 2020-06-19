@@ -13,6 +13,10 @@ git clone https://github.com/NBouteldja/KidneySegmentation_Histology.git
 ```
 conda env create -f ./environment.yml
 ```
+3. Activate installed python environment:
+```
+source activate python37
+```
 <br>
 <br>                 
 
