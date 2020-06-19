@@ -1,3 +1,6 @@
+# From: https://github.com/LiyuanLucasLiu/RAdam/blob/master/radam/radam.py
+# Author: Liyuan Liu
+
 import math
 import torch
 from torch.optim.optimizer import Optimizer, required
