@@ -25,7 +25,7 @@ python ./KidneySegmentation_Histology/training.py -m custom -s train_val_test -e
 ```
 Note:<br>
 - Before, you need to specify the path to results folder (variable: *resultsPath*) in *training.py* and the path to your data set folder (variable: *image_dir_base*) in *dataset.py*
-- *training.py* is specified as follows:
+- *training.py* is parameterized as follows:
 ```
 training.py --model --setting --epochs --batchSize --lrate --weightDecay 
 ```
