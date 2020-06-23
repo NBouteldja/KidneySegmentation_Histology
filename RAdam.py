@@ -1,5 +1,7 @@
 # From: https://github.com/LiyuanLucasLiu/RAdam/blob/master/radam/radam.py
 # Author: Liyuan Liu
+# Paper: Liyuan Liu , Haoming Jiang, Pengcheng He, Weizhu Chen, Xiaodong Liu, Jianfeng Gao, and Jiawei Han (2020). On the Variance of the Adaptive Learning Rate and Beyond. the Eighth International Conference on Learning Representations. 
+# Licence: Apache License 2.0
 
 import math
 import torch
