@@ -53,13 +53,16 @@ You can also apply the trained network to our provided exemplary image patches c
 | NTN | Annotation |
 | <img src="https://github.com/NBouteldja/KidneySegmentation_Histology/blob/master/exemplaryData/NTN.png?raw=true" width="400">| <img src="https://github.com/NBouteldja/KidneySegmentation_Histology/blob/master/exemplaryData/NTN-labels.png?raw=true" width="324"> |
 
-
-<br>
-<br>
 # Contact
-1.Nassim Bouteldja *nbouteldja@ukaachen.de*<br>
-2.Barbara Klinkhammer *bklinkhammer@ukaachen.de*<br>
-3.Roman David Bülow *rbuelow@ukaachen.de*<br>
+Peter Boor, MD, PhD<br>
+Institute of Pathology<br>
+RWTH Aachen University Hospital<br>
+Pauwelsstrasse 30<br>
+52074 Aachen, Germany<br>
+Phone:	+49 241 80 85227<br>
+Fax:		+49 241 80 82446<br>
+E-mail: 	pboor@ukaachen.de<br>
+<br>
 <br>
 
 #
