@@ -56,13 +56,17 @@ You can also apply the trained network to our provided exemplary image patches c
 
 <br>
 <br>
-           
+# Contact
+1.Nassim Bouteldja *nbouteldja@ukaachen.de*<br>
+2.Barbara Klinkhammer *bklinkhammer@ukaachen.de*<br>
+3.Roman David Bülow *rbuelow@ukaachen.de*<br>
+<br>
+
 #
     /**************************************************************************
     *                                                                         *
     *   Copyright (C) 2020 by RWTH Aachen University                          *
     *   http://www.rwth-aachen.de                                             *
-    *                                                                         *
     *                                                                         *
     *   License:                                                              *
     *                                                                         *
