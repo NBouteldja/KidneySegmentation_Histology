@@ -1,4 +1,4 @@
-import skimage as ski
+import skimage.measure
 import numpy as np
 
 # this class evaluates prediction performance of a single class/label using instace dice scores as well as average precisions
@@ -13,7 +13,8 @@ class ClassEvaluator(object):
 
     # add prediction/ground-truth pair
     def add_example(self, pred, gt):
-        gt_num = len(np.unique(gt)) - 1
+        gtInstances = np.unique(gt)
+        gt_num = len(gtInstances[gtInstances != 0])
         IoU_dict = []  # (prediction label)-(IoU)
         # match_dict = {}  # (prediction label)-(matched gt label)
 
@@ -27,7 +28,7 @@ class ClassEvaluator(object):
                 continue
             u, c = np.unique(gt[pred == label], return_counts=True)
             ind = np.argsort(c, kind='mergesort')
-            if len(u) == 1 and u[ind[-1]] == 0: # only background contained
+            if len(u) == 1 and u[0] == 0: # only background contained
                 IoU_dict.append(0)
                 # match_dict[label] = None
                 self.diceScores.append(0)
@@ -35,7 +36,7 @@ class ClassEvaluator(object):
                 # take the gt label with the largest overlap
                 i = ind[-2] if u[ind[-1]] == 0 else ind[-1]
                 intersect = c[i]
-                union = pred_area[label] + gt_area[u[i]] - c[i]
+                union = pred_area[label] + gt_area[u[i]] - intersect
                 IoU_dict.append(intersect / union)
                 # match_dict[label] = u[i]
                 diceScore = 2*intersect / (pred_area[label] + gt_area[u[i]])
@@ -56,7 +57,7 @@ class ClassEvaluator(object):
                 continue
             u, c = np.unique(pred[gt == label], return_counts=True)
             ind = np.argsort(c, kind='mergesort')
-            if len(u) == 1 and u[ind[-1]] == 0:  # only background contained
+            if len(u) == 1 and u[0] == 0:  # only background contained
                 self.diceScores.append(0)
             else:
                 # take the gt label with the largest overlap
@@ -67,7 +68,7 @@ class ClassEvaluator(object):
 
     # measure area regions
     def get_area_dict(self, label_map):
-        props = ski.measure.regionprops(label_map)
+        props = skimage.measure.regionprops(label_map)
         return {p.label: p.area for p in props}
 
     # compute average precision for each threshold
